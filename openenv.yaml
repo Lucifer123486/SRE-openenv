@@ -1,0 +1,10 @@
+name: auto-sre-v1
+version: 1.0.0
+entrypoint: "main:app"
+tasks:
+  - id: "cpu_spike"
+    difficulty: "easy"
+  - id: "mem_leak"
+    difficulty: "medium"
+  - id: "cascading"
+    difficulty: "hard"
