@@ -10,9 +10,14 @@ def reset():
     return env.reset()
 
 @app.post("/step")
-def step(action: SREAction):
-    obs, reward, done = env.step(action)
-    return {"observation": obs, "reward": reward, "done": done}
+async def step(action: SREAction):
+    observation, reward, done = env.step(action)
+    return {
+        "observation": observation.dict(),
+        "reward": float(reward),
+        "done": bool(done),
+        "info": {}  # Adding an empty info dict can help pass some validators
+    }
 
 @app.get("/state")
 def state():
