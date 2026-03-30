@@ -49,4 +49,8 @@ class AutoSREEnv:
         return self._obs("Metrics updated"), reward, done
 
     def _obs(self, msg):
-        return SREObservation(logs=msg, metrics=self.metrics)
+        # We wrap metrics inside 'state' to satisfy the OpenEnv schema
+        return SREObservation(
+            state=self.metrics, 
+            logs=msg
+        )
