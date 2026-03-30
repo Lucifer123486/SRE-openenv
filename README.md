@@ -64,12 +64,3 @@ POST /step
   "command": "scale_up"
 }
 ```
-👨💻 Author
-Mayur Patil Student at Trinity Academy of Engineering, Pune GDGoC Lead & Creative Head
-
-
-### 💡 Final Pro-Tip:
-Before you push to GitHub, make sure you have a screenshot of your **Dashboard** (the one with the live chart) saved in your folder. You can add it to the README by adding this line at the top:
-`![Dashboard Preview](./dashboard-screenshot.png)`
-
-**Would you like me to help you write a "Technical Paper" or "Submission Summary" for the hackathon form next?** This README covers the GitHub side perfectly!
