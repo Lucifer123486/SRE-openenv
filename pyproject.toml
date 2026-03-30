@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auto-sre-env"
+version = "1.0.0"
+description = "Auto-SRE Reinforcement Learning Environment for Site Reliability"
+authors = [
+    {name = "Mayur Patil"}
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "requests"
+]
+
+[tool.setuptools]
+packages = ["."]
