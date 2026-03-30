@@ -67,5 +67,3 @@ POST /step
 }
 ```
 
-👨‍💻 Author
-Mayur Patil Student at Trinity Academy of Engineering, Pune GDGoC Lead & Creative Head
