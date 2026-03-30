@@ -4,17 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auto-sre-env"
-version = "1.0.0"
-description = "Auto-SRE Reinforcement Learning Environment for Site Reliability"
-authors = [
-    {name = "Mayur Patil"}
-]
+version = "0.1.0"
+description = "Auto-SRE Reinforcement Learning Environment"
+authors = [{name = "Mayur Patil"}]
+requires-python = ">=3.9"
+# Critical: The validator is asking for this dependency
 dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
-    "requests"
+    "requests",
+    "openenv-core>=0.2.0"
 ]
 
+# Critical: The validator is asking for this entry point
+[project.scripts]
+server = "server.app:main"
+
 [tool.setuptools]
-packages = ["."]
+packages = ["server"]

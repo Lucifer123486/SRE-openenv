@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from environment import AutoSREEnv
-from models import SREAction
+from .environment import AutoSREEnv
+from .models import SREAction
 
 app = FastAPI()
 env = AutoSREEnv()
@@ -73,3 +73,10 @@ def trigger_baseline():
         "steps_taken": 2,
         "status": "reproducible"
     }
+# At the very bottom of server/app.py
+def main():
+    import uvicorn
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860, reload=False)
+
+if __name__ == "__main__":
+    main()

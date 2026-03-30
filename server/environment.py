@@ -1,6 +1,6 @@
 import uuid
 import random
-from models import SREAction, SREObservation
+from .models import SREAction, SREObservation
 
 class AutoSREEnv:
     def __init__(self):
