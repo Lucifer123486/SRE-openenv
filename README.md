@@ -1,5 +1,7 @@
 # 🛡️ Auto-SRE: A Reinforcement Learning Environment for Site Reliability
 
+![Dashboard Preview](./dashboard-screenshot.png)
+
 Auto-SRE is a high-fidelity **Reinforcement Learning (RL) Environment** designed to train AI agents in automated system recovery. Unlike static environments, Auto-SRE simulates a live microservices cluster with **Stochastic Chaos**, **Cascading Failures**, and **Resource Contention**.
 
 Built for the **OpenEnv Hackathon**, this project provides a standardized interface for agents to observe system telemetry and execute corrective actions.
@@ -64,3 +66,6 @@ POST /step
   "command": "scale_up"
 }
 ```
+
+👨‍💻 Author
+Mayur Patil Student at Trinity Academy of Engineering, Pune GDGoC Lead & Creative Head
