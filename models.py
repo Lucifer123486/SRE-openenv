@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from typing import Literal, Dict
+from typing import Dict, Any
 
 class SREAction(BaseModel):
     service: str
-    command: Literal["restart", "scale_up", "rollback", "no_op"]
+    command: str
 
 class SREObservation(BaseModel):
+    state: Dict[str, Any]  # The validator usually looks for 'state'
     logs: str
-    metrics: Dict[str, Dict[str, float]]
