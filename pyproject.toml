@@ -8,12 +8,14 @@ version = "0.1.0"
 description = "Auto-SRE Reinforcement Learning Environment"
 authors = [{name = "Mayur Patil"}]
 requires-python = ">=3.9"
-# Critical: The validator is asking for this dependency
+
+# Updated dependencies to include openai for the LLM Proxy check
 dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
     "requests",
+    "openai",
     "openenv-core>=0.2.0"
 ]
 
