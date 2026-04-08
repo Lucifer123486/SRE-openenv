@@ -7,11 +7,14 @@ class AutoSREEnv:
         self.reset()
 
     def reset(self, task_id="cpu_spike"):
+        # Explicitly support the 3 tasks required by the platform
         self.task_id = task_id
+        
+        # Initial metrics: Set them so the initial reward is never exactly 1.0
         self.metrics = {
-            "frontend": {"cpu": 20.0, "ram": 30.0},
-            "auth_api": {"cpu": 20.0, "ram": 30.0},
-            "database": {"cpu": 15.0, "ram": 25.0}
+            "frontend": {"cpu": 25.0, "ram": 35.0},
+            "auth_api": {"cpu": 25.0, "ram": 35.0},
+            "database": {"cpu": 30.0, "ram": 40.0}
         }
         self.steps = 0
         return self._obs(f"Environment Reset for task: {task_id}")
@@ -21,35 +24,35 @@ class AutoSREEnv:
         
         # 1. Apply Action
         if action.command == "restart":
-            self.metrics[action.service] = {"cpu": 10.0, "ram": 20.0}
+            self.metrics[action.service] = {"cpu": 15.0, "ram": 25.0}
         elif action.command == "scale_up":
-            self.metrics[action.service]["cpu"] *= 0.5 # Halve the load
+            self.metrics[action.service]["cpu"] *= 0.6 # Reduced the load
             
-        # 2. Task-Specific Logic (Stable version)
+        # 2. Task-Specific Logic
         if self.task_id == "cpu_spike":
             self.metrics["auth_api"]["cpu"] += 15.0
-            
         elif self.task_id == "mem_leak":
-            self.metrics["auth_api"]["ram"] += 20.0 # Fast leak!
-            
+            self.metrics["auth_api"]["ram"] += 20.0 
         elif self.task_id == "cascading":
-            # Hard Task: Database slows down, which kills the Frontend
             self.metrics["database"]["cpu"] += 10.0
-            if self.metrics["database"]["cpu"] > 70:
-                self.metrics["frontend"]["cpu"] += 30.0 # Cascading effect
+            if self.metrics["database"]["cpu"] > 60:
+                self.metrics["frontend"]["cpu"] += 25.0
 
-        # 3. Calculate Reward
+        # 3. Calculate Reward (STRICTLY between 0 and 1)
         avg_cpu = sum(m["cpu"] for m in self.metrics.values()) / 3
-        reward = 1.0 - (avg_cpu / 100.0)
+        # Logic: 1.0 - load. We clip it at 0.05 and 0.95 to stay in range (0, 1)
+        raw_reward = 1.0 - (avg_cpu / 100.0)
+        reward = max(0.05, min(0.95, raw_reward))
+        reward = round(reward, 2)
         
         # 4. Check Done Condition
         done = any(m["cpu"] >= 100 or m["ram"] >= 100 for m in self.metrics.values())
-        if done: reward = -5.0 # Penalty for crash
+        if done: 
+            reward = 0.10 # Platform hates -5.0 if it expects 0-1 range
         
         return self._obs("Metrics updated"), reward, done
 
     def _obs(self, msg):
-        # We wrap metrics inside 'state' to satisfy the OpenEnv schema
         return SREObservation(
             state=self.metrics, 
             logs=msg
