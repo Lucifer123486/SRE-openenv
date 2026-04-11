@@ -43,15 +43,14 @@ def get_tasks():
 
 @app.get("/grader")
 def get_grader_score():
-    # This fulfills the Requirement: /grader - Returns score 0.0-1.0
-    # Logic: If CPU is low, give 1.0. If crashed, give 0.0.
-    auth_cpu = env.metrics["auth_api"]["cpu"]
-    if auth_cpu < 50:
-        return {"score": 1.0}
-    elif auth_cpu < 90:
-        return {"score": 0.5}
-    else:
-        return {"score": 0.0}
+    # Scores MUST be strictly between 0 and 1 (exclusive) per Phase 2 rules.
+    # We derive a continuous score from the average CPU load across all services.
+    avg_cpu = sum(m["cpu"] for m in env.metrics.values()) / len(env.metrics)
+    # raw score: lower CPU → higher score
+    raw = 1.0 - (avg_cpu / 100.0)
+    # clamp to (0.05, 0.95) so we never return exactly 0.0 or 1.0
+    score = round(max(0.05, min(0.95, raw)), 4)
+    return {"score": score}
 
 # Add this endpoint to the bottom of your main.py file
 @app.post("/baseline")
