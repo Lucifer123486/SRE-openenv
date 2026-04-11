@@ -23,6 +23,11 @@ async def step(action: SREAction):
 def state():
     return {"metrics": env.metrics}
 
+@app.get("/metrics")
+def metrics():
+    """Explicit /metrics endpoint — exposes current CPU/RAM for all services."""
+    return {"metrics": env.metrics, "steps": env.steps, "task": env.task_id}
+
 @app.get("/")
 def home():
     return {"message": "Auto-SRE Environment is Live!", "docs": "/docs"}

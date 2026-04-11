@@ -14,7 +14,9 @@ RUN pip install --no-cache-dir \
     pydantic \
     requests \
     openai \
-    openenv-core>=0.2.0
+    openenv-core>=0.2.0 && \
+    pip install --no-cache-dir \
+    torch --index-url https://download.pytorch.org/whl/cpu
 
 # 5. Expose Port 7860 (Standard for Hugging Face & OpenEnv)
 EXPOSE 7860
