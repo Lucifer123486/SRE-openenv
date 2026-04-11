@@ -1,4 +1,5 @@
 # 🛡️ Auto-SRE: A Reinforcement Learning Environment for Site Reliability
+![OpenEnv Validated](https://img.shields.io/badge/OpenEnv-Validated-green)
 
 ![Dashboard Preview](./dashboard-screenshot.png)
 
