@@ -6,8 +6,8 @@ app = FastAPI()
 env = AutoSREEnv()
 
 @app.post("/reset")
-def reset():
-    return env.reset()
+def reset(task_id: str = "cpu_spike"):
+    return env.reset(task_id=task_id)
 
 @app.post("/step")
 async def step(action: SREAction):
