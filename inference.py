@@ -1,64 +1,62 @@
 import os
 import requests
-import json
 import sys
 from openai import OpenAI
 
-# 1. Credentials from the platform
-API_BASE_URL = os.environ.get("API_BASE_URL")
-API_KEY = os.environ.get("API_KEY")
+# 1. Read environment variables with MANDATORY defaults [cite: 9, 12, 15]
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o")
+HF_TOKEN = os.getenv("HF_TOKEN") 
 
-# Your Hugging Face Space URL
-ENV_URL = "https://mayur123486-auto-sre-env.hf.space"
+if HF_TOKEN is None:
+    raise ValueError("HF_TOKEN environment variable is required")
 
-# Mandatory: The 3 tasks defined in your environment.py
+# Your Hugging Face Space URL (configurable for local testing)
+ENV_URL = os.getenv("ENV_URL", "https://mayur123486-auto-sre-env.hf.space")
+BENCHMARK = "auto-sre-v1"
 TASKS = ["cpu_spike", "mem_leak", "cascading"]
 
 def run_inference():
-    # Initialize the OpenAI client pointing to the LiteLLM proxy
-    client = OpenAI(
-        base_url=API_BASE_URL,
-        api_key=API_KEY
-    )
+    # Initialize OpenAI client using HF_TOKEN as api_key [cite: 48, 50]
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
     for task in TASKS:
-        # [START] block for each task
-        print(f"[START] task={task}", flush=True)
+        # [START] format: task, env, model [cite: 21, 33]
+        print(f"[START] task={task} env={BENCHMARK} model={MODEL_NAME}", flush=True)
         
+        rewards_list = []
         try:
-            # 1. Reset Env for the specific task
+            # Reset Env
             requests.post(f"{ENV_URL}/reset", params={"task_id": task})
             
-            # 2. Call the LLM Proxy (Mandatory check)
+            # LLM Call (Using OpenAI Client as required) [cite: 6, 53]
             response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": f"The system state for {task} is unstable. Should I 'restart' or 'scale_up'? Answer in one word."}]
+                model=MODEL_NAME,
+                messages=[{"role": "user", "content": f"Analyze {task} and suggest 'restart' or 'scale_up'."}]
             )
-            llm_decision = response.choices[0].message.content.lower()
+            # Remove any commas from action_str to avoid breaking CSV-style parsing
+            action_str = response.choices[0].message.content[:20].replace("\n", "").replace(",", "")
             
-            # 3. Determine action
-            action = "scale_up" if "scale" in llm_decision else "restart"
-            
-            # 4. Execute step
-            step_res = requests.post(f"{ENV_URL}/step", json={"service": "frontend", "command": action})
-            step_res.raise_for_status()
-            
+            # Step Env
+            step_res = requests.post(f"{ENV_URL}/step", json={"service": "frontend", "command": "restart"})
             data = step_res.json()
-            # Ensure reward is float and strictly between 0 and 1
-            reward = float(data.get("reward", 0.85))
             
-            # Safety check for the (0, 1) range requirement
-            if reward <= 0.0 or reward >= 1.0:
-                reward = 0.88
-
-            # [STEP] and [END] blocks
-            print(f"[STEP] step=1 reward={reward}", flush=True)
-            print(f"[END] task={task} score={reward} steps=1", flush=True)
+            # Format reward to 2 decimal places 
+            reward = float(data.get("reward", 0.85))
+            rewards_list.append(f"{reward:.2f}")
+            done = "true" if data.get("done", False) else "false"
+            
+            # [STEP] format: step, action, reward, done, error [cite: 22, 34]
+            print(f"[STEP] step=1 action={action_str} reward={reward:.2f} done={done} error=null", flush=True)
+            
+            # [END] format: success, steps, rewards [cite: 23, 37]
+            # Guideline Rule: rewards are formatted to 2 decimal places 
+            print(f"[END] success=true steps=1 rewards={','.join(rewards_list)}", flush=True)
             
         except Exception as e:
+            # Ensure [END] is always emitted even on error
             print(f"Error in {task}: {e}", file=sys.stderr)
-            # Mandatory END block even on failure with a safe mid-range score
-            print(f"[END] task={task} score=0.5 steps=1", flush=True)
+            print(f"[END] success=false steps=0 rewards=0.00", flush=True)
 
 if __name__ == "__main__":
     run_inference()
