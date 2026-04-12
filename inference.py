@@ -167,8 +167,9 @@ def run_inference():
                     break
 
             # Phase 2 required: [END] tag
+            # The validator expects `score=` to map the final task score.
             print(
-                f"[END] success=true steps={len(rewards_list)} "
+                f"[END] success=true steps={len(rewards_list)} score={last_reward:.2f} "
                 f"rewards={','.join(rewards_list)}",
                 flush=True,
             )
@@ -177,8 +178,9 @@ def run_inference():
             # Always emit [END] — validator must never hang
             print(f"Error in task '{task}': {e}", file=sys.stderr)
             fallback = rewards_list if rewards_list else ["0.50"]
+            fallback_score = float(fallback[-1]) if fallback else 0.50
             print(
-                f"[END] success=false steps={len(fallback)} "
+                f"[END] success=false steps={len(fallback)} score={fallback_score:.2f} "
                 f"rewards={','.join(fallback)}",
                 flush=True,
             )
