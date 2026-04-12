@@ -48,8 +48,8 @@ def get_grader_score():
     avg_cpu = sum(m["cpu"] for m in env.metrics.values()) / len(env.metrics)
     # raw score: lower CPU → higher score
     raw = 1.0 - (avg_cpu / 100.0)
-    # clamp to (0.05, 0.95) so we never return exactly 0.0 or 1.0
-    score = round(max(0.05, min(0.95, raw)), 4)
+    # clamp to [0.01, 0.99] — never return exactly 0.0 or 1.0
+    score = round(max(0.01, min(0.99, raw)), 2)
     return {"score": score}
 
 # Add this endpoint to the bottom of your main.py file

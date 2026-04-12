@@ -1,5 +1,4 @@
-import uuid
-import random
+import math
 from .models import SREAction, SREObservation
 
 class AutoSREEnv:
@@ -38,17 +37,17 @@ class AutoSREEnv:
             if self.metrics["database"]["cpu"] > 60:
                 self.metrics["frontend"]["cpu"] += 25.0
 
-        # 3. Calculate Reward (STRICTLY between 0 and 1)
+        # 3. Calculate Reward (STRICTLY between 0 and 1, never 0.0 or 1.0)
         avg_cpu = sum(m["cpu"] for m in self.metrics.values()) / 3
-        # Logic: 1.0 - load. We clip it at 0.05 and 0.95 to stay in range (0, 1)
+        # Logic: 1.0 - load. Clamp to [0.01, 0.99] so validator never sees edge values.
         raw_reward = 1.0 - (avg_cpu / 100.0)
-        reward = max(0.05, min(0.95, raw_reward))
+        reward = max(0.01, min(0.99, raw_reward))
         reward = round(reward, 2)
         
         # 4. Check Done Condition
         done = any(m["cpu"] >= 100 or m["ram"] >= 100 for m in self.metrics.values())
-        if done: 
-            reward = 0.10 # Platform hates -5.0 if it expects 0-1 range
+        if done:
+            reward = 0.01  # Crashed state: minimum valid score, strictly > 0.0
         
         return self._obs("Metrics updated"), reward, done
 

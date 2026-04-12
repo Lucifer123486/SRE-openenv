@@ -144,7 +144,12 @@ def run_inference():
                 data = step_res.json()
 
                 # ── 5. Record reward (strictly 2 d.p., range 0.01–0.99) ──
-                reward      = round(max(0.01, min(0.99, float(data.get("reward", 0.50)))), 2)
+                reward = round(max(0.01, min(0.99, float(data.get("reward", 0.50)))), 2)
+                # Explicit safety guards — catch any floating-point edge that slips through
+                if reward <= 0.0:
+                    reward = 0.01
+                if reward >= 1.0:
+                    reward = 0.99
                 last_reward = reward
                 done_bool   = bool(data.get("done", False))
                 done_str    = "true" if done_bool else "false"
